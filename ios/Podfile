@@ -1,0 +1,88 @@
+# Resolve react_native_pods.rb with node to allow for hoisting
+require Pod::Executable.execute_command('node', ['-p',
+  'require.resolve(
+    "react-native/scripts/react_native_pods.rb",
+    {paths: [process.argv[1]]},
+  )', __dir__]).strip
+
+platform :ios, min_ios_version_supported
+prepare_react_native_project!
+
+linkage = ENV['USE_FRAMEWORKS']
+if linkage != nil
+  Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
+  use_frameworks! :linkage => linkage.to_sym
+end
+
+target 'GeorgeAssistantTemp' do
+  config = use_native_modules!
+
+  use_react_native!(
+    :path => config[:reactNativePath],
+    # An absolute path to your application root.
+    :app_path => "#{Pod::Config.instance.installation_root}/.."
+  )
+
+  post_install do |installer|
+    react_native_post_install(
+      installer,
+      config[:reactNativePath],
+      :mac_catalyst_enabled => false,
+      # :ccache_enabled => true
+    )
+
+    # ------------------------------------------------------------
+    # Fix iOS Simulator 26 SDK: RCT-Folly clockid_t redefinition
+    # Error típico:
+    # typedef redefinition with different types ('uint8_t' vs 'enum clockid_t')
+    # ------------------------------------------------------------
+    time_h_path = File.join(installer.sandbox.root, 'RCT-Folly', 'folly', 'portability', 'Time.h')
+
+    if File.exist?(time_h_path)
+      # Hacer el archivo escribible
+      File.chmod(0644, time_h_path)
+      content = File.read(time_h_path)
+
+      # 1) Elimina/neutraliza el typedef conflictivo (más estable que buscar un bloque exacto)
+      if content.include?('typedef uint8_t clockid_t;')
+        content = content.gsub(
+          /^typedef\s+uint8_t\s+clockid_t;\s*$/,
+          '// typedef uint8_t clockid_t; // patched: conflicts with iOS 26 SDK clockid_t'
+        )
+        File.write(time_h_path, content)
+        puts "✅ Patched RCT-Folly Time.h (clockid_t) for iOS 26 SDK"
+      else
+        puts "ℹ️ RCT-Folly Time.h: no typedef clockid_t found, nothing to patch"
+      end
+    else
+      puts "⚠️ RCT-Folly Time.h not found at: #{time_h_path}"
+    end
+
+    # ------------------------------------------------------------
+    # Fix Boost: Create missing is_convertible.hpp
+    # Error: 'boost/type_traits/is_convertible.hpp' file not found
+    # ------------------------------------------------------------
+    boost_type_traits_path = File.join(installer.sandbox.root, 'boost', 'boost', 'type_traits')
+    is_convertible_path = File.join(boost_type_traits_path, 'is_convertible.hpp')
+
+    if File.directory?(boost_type_traits_path) && !File.exist?(is_convertible_path)
+      # Crear el archivo is_convertible.hpp usando std::is_convertible
+      is_convertible_content = <<~EOF
+        #ifndef BOOST_TYPE_TRAITS_IS_CONVERTIBLE_HPP
+        #define BOOST_TYPE_TRAITS_IS_CONVERTIBLE_HPP
+
+        #include <type_traits>
+
+        namespace boost {
+          template<class From, class To>
+          struct is_convertible : std::is_convertible<From, To> {};
+        }
+
+        #endif
+      EOF
+
+      File.write(is_convertible_path, is_convertible_content)
+      puts "✅ Created Boost is_convertible.hpp"
+    end
+  end
+end
