@@ -46,8 +46,11 @@ export const GeorgeAvatarScreen: React.FC = () => {
 
     // Detener el reconocimiento continuo temporalmente
     await voiceService.stopListening();
+    
+    // Esperar suficiente tiempo para que el sistema limpie el request anterior
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    // Esperar un momento y luego escuchar directamente (sin saludo)
+    // Luego escuchar directamente (sin saludo)
     setTimeout(async () => {
       try {
         // Escuchar directamente sin saludo - solo cambiar color o mostrar oído
@@ -74,13 +77,20 @@ export const GeorgeAvatarScreen: React.FC = () => {
 
         // Volver a estado idle y reactivar reconocimiento continuo
         setState('idle');
+        setIsActive(false);
         voiceService.resetWakeWord();
+        
+        // Esperar antes de reiniciar el reconocimiento continuo
+        await new Promise((resolve) => setTimeout(resolve, 1000));
         await startContinuousListening();
       } catch (error) {
         console.error('[GeorgeAvatarScreen] Error en conversación después de wake word:', error);
         setState('idle');
         setIsActive(false);
         voiceService.resetWakeWord();
+        
+        // Esperar antes de reiniciar el reconocimiento continuo
+        await new Promise((resolve) => setTimeout(resolve, 1000));
         await startContinuousListening();
       }
     }, 500);

@@ -25,6 +25,8 @@ const glow = {
   shadowOpacity: 1,
   shadowRadius: 10,
   elevation: 12,
+  // backgroundColor ayuda a calcular shadow eficientemente (mínimo alpha)
+  backgroundColor: 'rgba(0, 0, 0, 0.01)',
 };
 
 /**
@@ -176,6 +178,7 @@ const styles = StyleSheet.create({
     height: 4,
     backgroundColor: color,
     borderRadius: 2,
+    // backgroundColor ayuda a calcular shadow eficientemente
   },
   eyebrowTiredLeft: {
     transform: [{ rotate: '-18deg' }],
@@ -213,7 +216,7 @@ const styles = StyleSheet.create({
     borderRadius: 29,
     borderWidth: 3,
     borderColor: color,
-    backgroundColor: 'transparent',
+    backgroundColor: 'rgba(0, 0, 0, 0.01)', // Mínimo alpha para shadow calculation
   },
   mouthSmile: {
     width: 96,
@@ -226,7 +229,7 @@ const styles = StyleSheet.create({
     borderLeftWidth: 0,
     borderRightWidth: 0,
     borderTopWidth: 0,
-    backgroundColor: 'transparent',
+    backgroundColor: 'rgba(0, 0, 0, 0.01)', // Mínimo alpha para shadow calculation
   },
   mouthFrown: {
     width: 72,
@@ -239,13 +242,13 @@ const styles = StyleSheet.create({
     borderLeftWidth: 0,
     borderRightWidth: 0,
     borderBottomWidth: 0,
-    backgroundColor: 'transparent',
+    backgroundColor: 'rgba(0, 0, 0, 0.01)', // Mínimo alpha para shadow calculation
   },
   mouthFlat: {
     width: 56,
     height: 5,
     borderRadius: 2,
     borderWidth: 3,
-    backgroundColor: 'transparent',
+    backgroundColor: 'rgba(0, 0, 0, 0.01)', // Mínimo alpha para shadow calculation
   },
 });

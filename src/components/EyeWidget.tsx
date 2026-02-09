@@ -273,6 +273,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 3,
     borderColor: '#4A90E2',
+    backgroundColor: 'rgba(0, 0, 0, 0.01)', // Mínimo alpha para shadow calculation
     shadowColor: '#4A90E2',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.5,
