@@ -1,12 +1,19 @@
 import React from 'react';
-import { GeorgeAvatarScreen } from './src/screens/GeorgeAvatarScreen';
+import { NavigationContainer } from '@react-navigation/native';
+import { SessionProvider } from './src/contexts/SessionContext';
+import { AppNavigator } from './src/navigation/AppNavigator';
 
 /**
- * Componente principal de la aplicación
+ * Componente principal: SessionProvider + navegación.
  */
 const App: React.FC = () => {
-  return <GeorgeAvatarScreen />;
+  return (
+    <SessionProvider>
+      <NavigationContainer>
+        <AppNavigator />
+      </NavigationContainer>
+    </SessionProvider>
+  );
 };
 
 export default App;
-
