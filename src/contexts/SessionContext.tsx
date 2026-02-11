@@ -6,6 +6,7 @@ const SERVICE_NAME = 'com.georgeassistant.session';
 export type SessionUser = {
   id: string;
   email?: string;
+  role?: string;
 };
 
 type SessionState = {

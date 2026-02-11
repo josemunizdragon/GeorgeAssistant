@@ -8,15 +8,18 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  SafeAreaView,
 } from 'react-native';
 import { useSession } from '../contexts/SessionContext';
+import { authService } from '../services/auth/AuthService';
 
 /**
- * Pantalla de login. Placeholder: signIn con datos mock.
+ * Pantalla de login: email, password, Sign In vía AuthService.authLogin.
  */
 export function AuthScreen() {
   const { signIn } = useSession();
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,10 +27,8 @@ export function AuthScreen() {
     setError(null);
     setLoading(true);
     try {
-      // Placeholder: token y user mock. Sustituir por llamada a BackendClient.
-      const mockToken = 'mock-token-' + Date.now();
-      const mockUser = { id: 'user-1', email: email || 'user@example.com' };
-      await signIn(mockToken, mockUser);
+      const { token, user } = await authService.authLogin(email, password);
+      await signIn(token, user);
     } catch (e: any) {
       setError(e?.message || 'Error al iniciar sesión');
     } finally {
@@ -36,46 +37,61 @@ export function AuthScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <View style={styles.card}>
-        <Text style={styles.title}>George Assistant</Text>
-        <Text style={styles.subtitle}>Inicia sesión para continuar</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Email (opcional)"
-          placeholderTextColor="#888"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          editable={!loading}
-        />
-        {error ? <Text style={styles.error}>{error}</Text> : null}
-        <TouchableOpacity
-          style={[styles.button, loading && styles.buttonDisabled]}
-          onPress={handleSignIn}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>Entrar</Text>
-          )}
-        </TouchableOpacity>
-      </View>
-    </KeyboardAvoidingView>
+    <SafeAreaView style={styles.safe}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <View style={styles.card}>
+          <Text style={styles.title}>George Assistant</Text>
+          <Text style={styles.subtitle}>Inicia sesión para continuar</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            placeholderTextColor="#888"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="email-address"
+            editable={!loading}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Contraseña"
+            placeholderTextColor="#888"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            editable={!loading}
+          />
+          {error ? <Text style={styles.error}>{error}</Text> : null}
+          <TouchableOpacity
+            style={[styles.button, loading && styles.buttonDisabled]}
+            onPress={handleSignIn}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Sign In</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safe: {
+    flex: 1,
+    backgroundColor: '#0A1929',
+  },
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#0A1929',
     padding: 24,
   },
   card: {
