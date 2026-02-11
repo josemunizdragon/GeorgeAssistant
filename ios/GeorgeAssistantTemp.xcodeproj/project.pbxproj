@@ -269,6 +269,7 @@
 				ENABLE_DEBUG_DYLIB = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
+					"DEBUG=1",
 					"RCT_REMOTE_PROFILE=0",
 					"ENABLE_DEBUG_DYLIB=0",
 				);

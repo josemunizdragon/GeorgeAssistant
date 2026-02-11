@@ -16,14 +16,42 @@
 
 ## iOS
 
-1. **Pod install** (requiere UTF-8 en el terminal):
+### Error "No bundle URL present"
+- **Causa**: El target de la app en **Debug** no tenía `DEBUG=1` en el preprocesador, así que en `AppDelegate` se usaba la rama Release y se buscaba `main.jsbundle` (que no existe en desarrollo).
+- **Corrección**: Se añadió `DEBUG=1` a **GCC_PREPROCESSOR_DEFINITIONS** del target GeorgeAssistantTemp en la configuración Debug (`project.pbxproj`).
+- **Scheme**: El scheme **GeorgeAssistantTemp** usa ya **Debug** para Run (LaunchAction); no hace falta cambiarlo.
+
+### Nombres (comprobado)
+- `app.json` → `name`: **GeorgeAssistantTemp**
+- `index.js` → `AppRegistry.registerComponent(appName, () => App)` con `appName` de app.json
+- `AppDelegate` → `moduleName = @"GeorgeAssistantTemp"`, `jsBundleURLForBundleRoot:@"index"`
+
+### Cómo correr iOS en desarrollo
+
+1. **Metro tiene que estar levantado** (la app en Debug pide el bundle al packager):
+   ```bash
+   yarn start
+   ```
+   Déjalo en una terminal.
+
+2. **Limpieza (si hubo cambios de native o sigues con errores)**:
    ```bash
    export LANG=en_US.UTF-8
    export LC_ALL=en_US.UTF-8
-   cd ios && pod install && cd ..
+   cd ios && rm -rf build Pods/build ~/Library/Developer/Xcode/DerivedData/GeorgeAssistantTemp-* && pod install && cd ..
    ```
-2. **Simulador**: `npx react-native run-ios --simulator "iPhone 17"` (o el nombre de tu simulador).
-3. **Dispositivo físico**: desbloquear el iPhone, confiar en el ordenador y tener instalada la Developer Disk Image que coincida con la versión de iOS del dispositivo. Si falla con "Timed out waiting for destinations", ejecutar para simulador o abrir el workspace en Xcode y seleccionar un destino disponible.
+
+3. **Ejecutar la app (otra terminal)**:
+   ```bash
+   npx react-native run-ios --simulator "iPhone 17"
+   ```
+   O sin especificar simulador (usa el por defecto):
+   ```bash
+   npx react-native run-ios
+   ```
+   Desde Xcode: abrir `ios/GeorgeAssistantTemp.xcworkspace`, elegir un simulador, **Product → Run** (usa Debug).
+
+4. **Dispositivo físico**: desbloquear el iPhone, confiar en el ordenador y tener la Developer Disk Image correcta. Si falla "Timed out waiting for destinations", usar simulador o en Xcode elegir un destino disponible.
 
 ## Android
 
