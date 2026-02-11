@@ -1,5 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import * as Keychain from 'react-native-keychain';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { STORAGE_KEYS } from '../config/storageKeys';
 
 const SERVICE_NAME = 'com.georgeassistant.session';
 
@@ -65,9 +67,14 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
             const parsedUser = JSON.parse(credentials.username) as SessionUser;
             setUser(parsedUser);
             setToken(credentials.password);
+            await AsyncStorage.setItem(STORAGE_KEYS.access_token, credentials.password);
+            await AsyncStorage.setItem(STORAGE_KEYS.username, parsedUser.email ?? parsedUser.id);
+            const guid = (parsedUser as SessionUser & { unique_guid?: string }).unique_guid ?? parsedUser.id;
+            await AsyncStorage.setItem(STORAGE_KEYS.unique_guid, guid);
           } catch {
             setToken(credentials.password);
             setUser({ id: 'user' });
+            await AsyncStorage.setItem(STORAGE_KEYS.access_token, credentials.password);
           }
         }
       } catch (e) {

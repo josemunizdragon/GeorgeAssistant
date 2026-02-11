@@ -32,9 +32,26 @@ export function AppNavigator() {
   if (!token) {
     return (
       <Stack.Navigator
-        screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#0A1929' } }}
+        screenOptions={{
+          headerShown: true,
+          headerStyle: { backgroundColor: '#0A1929' },
+          headerTintColor: '#fff',
+          contentStyle: { backgroundColor: '#0A1929' },
+        }}
       >
-        <Stack.Screen name="Auth" component={AuthScreen} />
+        <Stack.Screen
+          name="Auth"
+          component={AuthScreen}
+          options={({ navigation }) => ({
+            title: 'Iniciar sesión',
+            headerRight: () => (
+              <TouchableOpacity onPress={() => navigation.navigate('Settings')} style={styles.headerButton}>
+                <Text style={styles.headerButtonText}>Ajustes</Text>
+              </TouchableOpacity>
+            ),
+          })}
+        />
+        <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: 'Ajustes' }} />
       </Stack.Navigator>
     );
   }

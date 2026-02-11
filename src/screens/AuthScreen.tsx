@@ -11,14 +11,14 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { useSession } from '../contexts/SessionContext';
-import { authService } from '../services/auth/AuthService';
+import { login } from '../services/api/Api';
 
 /**
- * Pantalla de login: email, password, Sign In vía AuthService.authLogin.
+ * Pantalla de login: username, password, Sign In vía Api.login.
  */
 export function AuthScreen() {
   const { signIn } = useSession();
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,10 +27,11 @@ export function AuthScreen() {
     setError(null);
     setLoading(true);
     try {
-      const { token, user } = await authService.authLogin(email, password);
+      const { token, user } = await login(username, password);
       await signIn(token, user);
     } catch (e: any) {
-      setError(e?.message || 'Error al iniciar sesión');
+      const message = e?.response?.data?.message ?? e?.message ?? 'Error al iniciar sesión';
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -47,13 +48,12 @@ export function AuthScreen() {
           <Text style={styles.subtitle}>Inicia sesión para continuar</Text>
           <TextInput
             style={styles.input}
-            placeholder="Email"
+            placeholder="Usuario"
             placeholderTextColor="#888"
-            value={email}
-            onChangeText={setEmail}
+            value={username}
+            onChangeText={setUsername}
             autoCapitalize="none"
             autoCorrect={false}
-            keyboardType="email-address"
             editable={!loading}
           />
           <TextInput
